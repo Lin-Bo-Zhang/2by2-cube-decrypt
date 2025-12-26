@@ -1,3 +1,7 @@
+'''
+程式.二階魔術方塊破解器.main 的 Docstring
+本程式用於解二階魔術方塊，使用者可輸入打亂公式或手動輸入魔術方塊狀態，程式將輸出解法公式。
+'''
 # 方塊位置  l 
 # 腳塊朝向  o
 # 排列方法: list中0~3是底層(白)4~7是頂層(黃)
@@ -19,13 +23,26 @@ from moves import *
 import numpy as np
 import types
 
-l = np.array([0,1,2,3,4,5,6,7])
-o = np.array([0,0,0,0,0,0,0,0])
+l = np.array([0,1,2,3,4,5,6,7])                                     #資料
+o = np.array([0,0,0,0,0,0,0,0])                                                    
+                                                                    
+
+if int(input('使用打亂公式輸入1,手動輸入狀態輸入0:'))==0:
+    l=np.array(list(map(int,input('角塊位置').split(','))))              #輸入
+    o=np.array(list(map(int,input('角塊朝向').split(','))))             
+else:
+    a=list(map(str,(input('打亂公式').split(' '))))
+    map={'R':R0,'R\'':R1,'R2':R2,
+        'U':U0,'U\'':U1,'U2':U2,
+        'F':F0,'F\'':F1,'F2':F2,
+        }
+    a=[map[i] for i in a]
+
+    for i in a:
+        i(l,o)
 
 
 
-l=np.array(list(map(int,input('角塊位置').split(','))))
-o=np.array(list(map(int,input('角塊朝向').split(','))))
 
 
 
@@ -33,10 +50,7 @@ o=np.array(list(map(int,input('角塊朝向').split(','))))
 
 
 
-
-
-
-def process_corner(l, o, actions, cid_info):
+def process_corner(l, o, actions, cid_info):                                #第一層邏輯
     """
     l: 角塊位置列表
     o: 朝向列表
@@ -48,86 +62,86 @@ def process_corner(l, o, actions, cid_info):
     seq用來將目標塊從目標曹上方放到目標曹
     """
     for pos, cid in enumerate(l):
-        if cid != cid_info['cid']:
+        if cid != cid_info['cid']:                      #找到目標腳塊
             continue
 
-        if pos > 3:
-            move = cid_info['move1'](pos, o)
-            actions.append(move)
+        if pos > 3:                                     #處理在頂層的腳塊
+            move = cid_info['move1'](pos, o)            #移動到目標曹上方
+            actions.append(move)                        #動作存放
             move(l, o)
 
-            seq = cid_info['seq1'](pos, o)
-            actions.append(seq)
+            seq = cid_info['seq1'](pos, o)              #放入目標曹
+            actions.append(seq)                         #動作存放
             f(l, o, seq)
             break
 
-        if pos < 4:
-            move = cid_info['move2'](pos, o)
-            actions.append(move)
+        if pos < 4:                                     #處理在底層的腳塊            
+            move = cid_info['move2'](pos, o)            #移動到頂層並移動到目標曹上方
+            actions.append(move)                        #動作存放
             f(l, o, move)
 
-            seq = cid_info['seq2'](pos, o)
-            actions.append(seq)
+            seq = cid_info['seq2'](pos, o)              #放入目標曹
+            actions.append(seq)                         #動作存放
             f(l, o, seq)
             break
 
 
-cid1 = {
+cid1 = {                                                                    #腳塊0的邏輯
     'cid': 0,
-    'move1': lambda pos, o=None: [N, U1, U2, U0][pos - 4],
-    'seq1': lambda pos, o: [[R0,U2,R1,U1,R0,U0,R1],
+    'move1': lambda pos, o=None: [N, U1, U2, U0][pos - 4],                  #腳塊在頂層時的移動函式
+    'seq1': lambda pos, o: [[R0,U2,R1,U1,R0,U0,R1],                         #放入目標曹的函式
                              [U0,R0,U1,R1],
                              [R0,U0,R1]][o[4]],
-    'move2': lambda pos, o=None: [[R0,U1,R1],
+    'move2': lambda pos, o=None: [[R0,U1,R1],                               #腳塊在底層時的移動函式 
                                   [L1,U1,L0],
                                   [L0,U2,L1],
                                   [R1,U0,R0,U0]][pos],
-    'seq2': lambda pos, o: [[R0,U2,R1,U1,R0,U0,R1],
+    'seq2': lambda pos, o: [[R0,U2,R1,U1,R0,U0,R1],                         #放入目標曹的函式
                              [U0,R0,U1,R1],
                              [R0,U0,R1]][o[4]]
 }
 
-cid2 = {
-    'cid': 1,
-    'move1': lambda pos, o=None: [U0, N, U1, U2][pos - 4],
-    'seq1': lambda pos, o: [[L1,U2,L0,U0,L1,U1,L0],
-                             [U1,L1,U0,L0],
+cid2 = {                                                                    #腳塊1的邏輯                            
+    'cid': 1,                                                               
+    'move1': lambda pos, o=None: [U0, N, U1, U2][pos - 4],                  #腳塊在頂層時的移動函式
+    'seq1': lambda pos, o: [[L1,U2,L0,U0,L1,U1,L0],                         #放入目標曹的函式        
+                             [U1,L1,U0,L0],         
                              [L1,U1,L0]][o[5]],
-    'move2': lambda pos, o=None: [N,
+    'move2': lambda pos, o=None: [N,                                        #腳塊在底層時的移動函式
                                   [L1,U0,L0],
                                   [L0,U2,L1,U0],
                                   [R1,U2,R0]][pos],
-    'seq2': lambda pos, o: [[L1,U2,L0,U0,L1,U1,L0],
+    'seq2': lambda pos, o: [[L1,U2,L0,U0,L1,U1,L0],                         #放入目標曹的函式
                              [U1,L1,U0,L0],
                              [L1,U1,L0]][o[5]]
 }
 
-cid3 = {
+cid3 = {                                                                    #腳塊2的邏輯                        
     'cid': 2,
-    'move1': lambda pos, o=None: [U2,U0, N, U1][pos - 4],
-    'seq1': lambda pos, o: [[L0,U2,L1,U1,L0,U0,L1],
+    'move1': lambda pos, o=None: [U2,U0, N, U1][pos - 4],                   #腳塊在頂層時的移動函式
+    'seq1': lambda pos, o: [[L0,U2,L1,U1,L0,U0,L1],                         #放入目標曹的函式
                              [U0,L0,U1,L1],
                              [L0,U0,L1]][o[6]],
-    'move2': lambda pos, o=None: [N,
+    'move2': lambda pos, o=None: [N,                                        #腳塊在底層時的移動函式
                                   N,
                                   [L0,U1,L1],
                                   [R1,U1,R0]][pos],
-    'seq2': lambda pos, o: [[L0,U2,L1,U1,L0,U0,L1],
+    'seq2': lambda pos, o: [[L0,U2,L1,U1,L0,U0,L1],                          #放入目標曹的函式
                              [U0,L0,U1,L1],
                              [L0,U0,L1]][o[6]]
 }
 
-cid4 = {
+cid4 = {                                                                    #腳塊3的邏輯
     'cid': 3,
-    'move1': lambda pos, o=None: [U1,U2,U0, N][pos - 4],
-    'seq1': lambda pos, o: [[R1,U2,R0,U0,R1,U1,R0],
+    'move1': lambda pos, o=None: [U1,U2,U0, N][pos - 4],                    #腳塊在頂層時的移動函式
+    'seq1': lambda pos, o: [[R1,U2,R0,U0,R1,U1,R0],                         #放入目標曹的函式
                              [U1,R1,U0,R0],
                              [R1,U1,R0]][o[7]],
-    'move2': lambda pos, o=None: [N,
+    'move2': lambda pos, o=None: [N,                                        #腳塊在底層時的移動函式
                                   N,
                                   N,
                                   [R1,U0,R0]][pos],
-    'seq2': lambda pos, o: [[R1,U2,R0,U0,R1,U1,R0],
+    'seq2': lambda pos, o: [[R1,U2,R0,U0,R1,U1,R0],                         #放入目標曹的函式
                              [U1,R1,U0,R0],
                              [R1,U1,R0]][o[7]]
 }
@@ -135,12 +149,12 @@ cid4 = {
 
 
 actions = []
-process_corner(l, o, actions, cid1)
+process_corner(l, o, actions, cid1)                                         #執行腳塊處理函式
 process_corner(l, o, actions, cid2)
 process_corner(l, o, actions, cid3)
 process_corner(l, o, actions, cid4)
 
-oll = {
+oll = {                                                                     #OLL辨識表
     (1,1,1,1): 0,
     (1,2,2,1): 1,
     (0,2,2,0): 2,
@@ -149,7 +163,7 @@ oll = {
     (1,2,0,2): 5,
     (2,1,2,0): 6,
 }
-oll_actions = {0:[R2,U2,R0,U2,R2],
+oll_actions = {0:[R2,U2,R0,U2,R2],                                          #OLL(頂面顏色翻正公式)對應動作
                1:[F0,R0,U0,R1,U1,R0,U0,R1,U1,F1],
                2:[F0,R0,U0,R1,U1,F1],
                3:[R0,U0,R1,U1,R1,F0,R0,F1],
@@ -158,20 +172,20 @@ oll_actions = {0:[R2,U2,R0,U2,R2],
                6:[R0,U2,R1,U1,R0,U1,R1]
                }
 
-if o[4] != 0 or o[5] != 0 or o[6] != 0 or o[7] != 0:
+if o[4] != 0 or o[5] != 0 or o[6] != 0 or o[7] != 0:                       #OLL(頂面顏色翻正公式)辨識與處理
     for _ in range(4):
-        key = (o[4], o[5], o[6], o[7])
+        key = tuple(o[4:8])
 
         if key in oll:
             idx = oll[key]
             f(l, o, oll_actions[idx])
-            actions.append(oll_actions[idx])
+            actions.append(oll_actions[idx])                                #動作存放
             break
 
-        actions.append(U0)
+        actions.append(U0)                                                 #動作存放
         U0(l, o)
 
-pll= {
+pll= {                                                                      #PLL(頂層腳塊位置公式)辨識表                                  
     (7,5,6,4):0,
     (6,4,5,7):1,
     (5,7,4,6):2,
@@ -181,7 +195,7 @@ pll= {
     (5,4,7,6):6,
     (7,6,5,4):7
 }
-pll_actions={
+pll_actions={                                                             #PLL(頂層腳塊位置公式)對應動作
     0:[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1,U1],
     1:[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1,U2],
     2:[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1,U0],
@@ -191,17 +205,17 @@ pll_actions={
     6:[F0,R0,U1,R1,U1,R0,U0,R1,F1,R1,U0,R1,U1,R1,F0,R0,F1,U1],
     7:[F0,R0,U1,R1,U1,R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R0,F1,U0]
 }
-if l[4] != 4 or l[5] != 5 or l[6] != 6 or l[7] != 7:
+if l[4] != 4 or l[5] != 5 or l[6] != 6 or l[7] != 7:                    #PLL(頂層腳塊位置公式)辨識與處理
     for _ in range(4):
-        key = (l[4], l[5], l[6], l[7])
+        key = tuple(l[4:8])
 
         if key in pll:
             idx = pll[key]
             f(l, o, pll_actions[idx])
-            actions.append(pll_actions[idx])
+            actions.append(pll_actions[idx])                            #動作存放
             break
 
-        actions.append(U0)
+        actions.append(U0)                                              #動作存放
         U0(l, o)
 
 
@@ -214,7 +228,7 @@ if l[4] != 4 or l[5] != 5 or l[6] != 6 or l[7] != 7:
 
 
 
-temp=[]                                     #存的函式轉換成轉動代號
+temp=[]                                     #存的動作轉換成轉動代號
 map_inverse={R0:'R',R1:"R'",R2:'R2',
     U0:'U',U1:"U'",U2:'U2',
     F0:'F',F1:"F'",F2:'F2',
@@ -222,14 +236,14 @@ map_inverse={R0:'R',R1:"R'",R2:'R2',
     B0:'B',B1:"B'",B2:'B2',
     D0:'D',D1:"D'",D2:'D2',
     N:''}
-for i in actions:
-    if isinstance(i, types.FunctionType):
+for i in actions:                           #將動作轉換成轉動代號
+    if isinstance(i, types.FunctionType):   #檢查是否為單一動作
         temp.append(map_inverse[i])
-    else:
+    else:                                   #取出清單裡的動作
         for j in i:
             temp.append(map_inverse[j])
 
-map_inverse = {
+map_inverse = {                             #用於簡化公式的對應表
     'R': "R'", "R'": 'R',
     'U': "U'", "U'": 'U',
     'F': "F'", "F'": 'F',
@@ -240,7 +254,7 @@ map_inverse = {
     'L2':'L2', 'B2':'B2', 'D2':'D2', '':''
 }
 changed = True
-while changed:
+while changed:                          #簡化公式(連續相同動作合併或刪除)
     changed = False
     temp2 = []
     b=0
@@ -265,7 +279,7 @@ while changed:
 
 
 changed = True
-while changed:
+while changed:                      #簡化公式(處理合併後出現的動作x2+動作or動作')
     changed = False
     temp2 = []
     b=0
@@ -290,5 +304,5 @@ while changed:
 
 
 
-result = ' '.join(i for i in temp2 if i != '')
+result = ' '.join(i for i in temp2 if i != '')          #動作轉換為字串並輸出
 print(result)
