@@ -32,9 +32,9 @@ if int(input('使用打亂公式輸入1,手動輸入狀態輸入0:'))==0:
     o=np.array(list(map(int,input('角塊朝向').split(','))))             
 else:
     a=list(map(str,(input('打亂公式').split(' '))))
-    map={'R':R0,'R\'':R1,'R2':R2,
-        'U':U0,'U\'':U1,'U2':U2,
-        'F':F0,'F\'':F1,'F2':F2,
+    map={'R':R0,"R'":R1,'R2':R2,
+        'U':U0,"U'":U1,'U2':U2,
+        'F':F0,"F'":F1,'F2':F2,
         }
     a=[map[i] for i in a]
 
@@ -50,7 +50,7 @@ else:
 
 
 
-def process_corner(l, o, actions, cid_info):                                #第一層邏輯
+def process_corner(l, o, actions, cid_info):            #第一層邏輯
     """
     l: 角塊位置列表
     o: 朝向列表
@@ -155,64 +155,46 @@ process_corner(l, o, actions, cid3)
 process_corner(l, o, actions, cid4)
 
 oll = {                                                                     #OLL辨識表
-    (1,1,1,1): 0,
-    (1,2,2,1): 1,
-    (0,2,2,0): 2,
-    (0,1,1,0): 3,
-    (0,1,0,2): 4,
-    (1,2,0,2): 5,
-    (2,1,2,0): 6,
+    (1,1,1,1): [R2,U2,R0,U2,R2],
+    (1,2,2,1): [F0,R0,U0,R1,U1,R0,U0,R1,U1,F1],
+    (0,2,2,0): [F0,R0,U0,R1,U1,F1],
+    (0,1,1,0): [R0,U0,R1,U1,R1,F0,R0,F1],
+    (0,1,0,2): [F0,R1,F1,U0,R0,U1,R1],
+    (1,2,0,2): [L1,U2,L0,U0,L1,U0,L0],
+    (2,1,2,0): [R0,U2,R1,U1,R0,U1,R1],
 }
-oll_actions = {0:[R2,U2,R0,U2,R2],                                          #OLL(頂面顏色翻正公式)對應動作
-               1:[F0,R0,U0,R1,U1,R0,U0,R1,U1,F1],
-               2:[F0,R0,U0,R1,U1,F1],
-               3:[R0,U0,R1,U1,R1,F0,R0,F1],
-               4:[F0,R1,F1,U0,R0,U1,R1],
-               5:[L1,U2,L0,U0,L1,U0,L0],
-               6:[R0,U2,R1,U1,R0,U1,R1]
-               }
 
-if o[4] != 0 or o[5] != 0 or o[6] != 0 or o[7] != 0:                       #OLL(頂面顏色翻正公式)辨識與處理
+
+if o[4] != 0 or o[5] != 0 or o[6] != 0 or o[7] != 0:                        #OLL(頂面顏色翻正公式)辨識與處理
     for _ in range(4):
         key = tuple(o[4:8])
 
         if key in oll:
-            idx = oll[key]
-            f(l, o, oll_actions[idx])
-            actions.append(oll_actions[idx])                                #動作存放
+            f(l, o, oll[key])
+            actions.append(oll[key])                                        #動作存放
             break
 
         actions.append(U0)                                                 #動作存放
         U0(l, o)
 
 pll= {                                                                      #PLL(頂層腳塊位置公式)辨識表                                  
-    (7,5,6,4):0,
-    (6,4,5,7):1,
-    (5,7,4,6):2,
-    (4,6,7,5):3,
-    (6,5,4,7):4,
-    (4,7,6,5):5,
-    (5,4,7,6):6,
-    (7,6,5,4):7
+    (7,5,6,4):[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1,U1],
+    (6,4,5,7):[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1,U2],
+    (5,7,4,6):[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1,U0],
+    (4,6,7,5):[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1],
+    (6,5,4,7):[F0,R0,U1,R1,U1,R0,U0,R1,F1,R1,U0,R1,U1,R1,F0,R0,F1],
+    (4,7,6,5):[F0,R0,U1,R1,U1,R0,U0,R1,F1,R1,U0,R1,U1,R1,F0,R0,F1,U2],
+    (5,4,7,6):[F0,R0,U1,R1,U1,R0,U0,R1,F1,R1,U0,R1,U1,R1,F0,R0,F1,U1],
+    (7,6,5,4):[F0,R0,U1,R1,U1,R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R0,F1,U0]
 }
-pll_actions={                                                             #PLL(頂層腳塊位置公式)對應動作
-    0:[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1,U1],
-    1:[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1,U2],
-    2:[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1,U0],
-    3:[R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R2,U1,R1],
-    4:[F0,R0,U1,R1,U1,R0,U0,R1,F1,R1,U0,R1,U1,R1,F0,R0,F1],
-    5:[F0,R0,U1,R1,U1,R0,U0,R1,F1,R1,U0,R1,U1,R1,F0,R0,F1,U2],
-    6:[F0,R0,U1,R1,U1,R0,U0,R1,F1,R1,U0,R1,U1,R1,F0,R0,F1,U1],
-    7:[F0,R0,U1,R1,U1,R0,U0,R1,F1,R0,U0,R1,U1,R1,F0,R0,F1,U0]
-}
+
 if l[4] != 4 or l[5] != 5 or l[6] != 6 or l[7] != 7:                    #PLL(頂層腳塊位置公式)辨識與處理
     for _ in range(4):
         key = tuple(l[4:8])
 
         if key in pll:
-            idx = pll[key]
-            f(l, o, pll_actions[idx])
-            actions.append(pll_actions[idx])                            #動作存放
+            f(l, o, pll[key])
+            actions.append(pll[key])                            #動作存放
             break
 
         actions.append(U0)                                              #動作存放
